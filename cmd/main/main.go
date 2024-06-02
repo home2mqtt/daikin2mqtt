@@ -1,37 +1,26 @@
 package main
 
 import (
+	"flag"
 	"log"
-	"net/url"
 
-	"github.com/samthor/daikin-go/api"
+	"github.com/balazsgrill/hass/paho"
+	"github.com/myhomemqtt/daikin2mqtt"
 )
 
 func main() {
-	devices := make(map[string]url.Values)
+	host := flag.String("h", "", "Host or IP address of device")
+	broker := flag.String("b", "tcp://192.168.0.1", "URL of MQTT broker")
+	flag.Parse()
 
-	disc, err := api.NewDiscover()
-	if err != nil {
-		log.Fatal(err)
+	if *host == "" {
+		log.Panic("Host is required")
 	}
 
-	err = disc.Announce()
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Printf("connecting to %s\n", *host)
+	runtime := paho.NewByURL(*broker)
 
-	defer disc.Close()
+	daikin2mqtt.CreateBridge(runtime, *host).Attach(daikin2mqtt.New(*host), "f2rpi40.lan")
 
-	for id, v, err := disc.Next(); id != ""; {
-		if err != nil {
-			log.Println(err)
-		} else {
-			_, exists := devices[id]
-			if !exists {
-				log.Printf("%s (%v)", id, v)
-				devices[id] = v
-			}
-			disc.Announce()
-		}
-	}
+	select {}
 }
