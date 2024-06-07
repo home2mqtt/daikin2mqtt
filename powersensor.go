@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/balazsgrill/hass"
+	"github.com/home2mqtt/hass"
 )
 
 type powerSensor struct {

@@ -3,7 +3,7 @@ package daikin2mqtt
 import (
 	"time"
 
-	"github.com/balazsgrill/hass"
+	"github.com/home2mqtt/hass"
 	"github.com/samthor/daikin-go/api"
 )
 

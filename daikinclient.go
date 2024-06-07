@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/balazsgrill/hass"
+	"github.com/home2mqtt/hass"
 	"github.com/samthor/daikin-go/api"
 )
 

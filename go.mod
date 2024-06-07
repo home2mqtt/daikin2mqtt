@@ -1,9 +1,9 @@
-module github.com/myhomemqtt/daikin2mqtt
+module github.com/home2mqtt/daikin2mqtt
 
 go 1.21.0
 
 require (
-	github.com/balazsgrill/hass v0.0.7
+	github.com/home2mqtt/hass v0.0.8
 	github.com/samthor/daikin-go v1.0.0
 )
 
@@ -20,4 +20,3 @@ require (
 	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd // indirect
 )
 
-replace github.com/balazsgrill/hass => ../hass
