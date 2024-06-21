@@ -9,8 +9,15 @@ import (
 	"github.com/samthor/daikin-go/api"
 )
 
+type IHVAC[StateType any] interface {
+	Stop() (StateType, error)
+	Restart(StateType) error
+	State() StateType
+	IsOn(StateType) bool
+}
+
 type Daikin interface {
-	hass.IHVAC[DaikinState]
+	IHVAC[DaikinState]
 	ReadSensor() (api.SensorInfo, error)
 	GetWeekPowerEx() (GetWeekPowerEx, error)
 	GetMonthPowerEx() (GetMonthPowerEx, error)
