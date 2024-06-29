@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/home2mqtt/hass"
+	"github.com/home2mqtt/hass/bridge"
 )
 
 type powerSensor struct {
@@ -37,9 +38,9 @@ func PowerSensorDescriptor(id string) *hass.Sensor {
 	}
 }
 
-func (s *powerSensor) init() {
+func (s *powerSensor) init(bridgehost string) {
 	log.Println("Announcing " + s.descriptor.UniqueID)
-	hass.AnnounceDevice(s.runtime, "homeassistant", "f2rpi40", s.descriptor.UniqueID, s.descriptor)
+	bridge.AnnounceDevice(s.runtime, "homeassistant", bridgehost, s.descriptor.UniqueID, s.descriptor)
 	go s.tick()
 }
 
@@ -53,13 +54,13 @@ func (s *powerSensor) tick() {
 	s.runtime.Send(s.descriptor.Topic, []byte(fmt.Sprintf("%f", energy)))
 }
 
-func ProvideEnergy(runtime hass.IPubSubRuntime, ac Daikin, id string) {
+func ProvideEnergy(runtime hass.IPubSubRuntime, ac Daikin, id string, bridgehost string) {
 	item := &powerSensor{
 		descriptor: PowerSensorDescriptor(id),
 		ac:         ac,
 		runtime:    runtime,
 	}
-	item.init()
+	item.init(bridgehost)
 
 	ticker := time.NewTicker(10 * time.Minute)
 	go func() {

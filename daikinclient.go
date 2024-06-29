@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/home2mqtt/hass"
 	"github.com/samthor/daikin-go/api"
 )
 
@@ -29,7 +28,8 @@ type Daikin interface {
 type DaikinState = api.ControlInfo
 
 var _ Daikin = &ac{}
-var _ hass.IHVAC[DaikinState] = &ac{}
+
+//var _ hass.IHVAC = &ac{}
 
 /* 100Wh */
 type Power []int

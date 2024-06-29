@@ -4,27 +4,28 @@ import (
 	"time"
 
 	"github.com/home2mqtt/hass"
+	"github.com/home2mqtt/hass/bridge"
 	"github.com/samthor/daikin-go/api"
 )
 
 type daikin2MqttBridge struct {
-	propertyContext
-	mode       stringProperty
-	temp       floatProperty
-	outside    floatProperty
-	targettemp floatProperty
-	power      stringProperty
-	//humidity   floatProperty
-	fan   stringProperty
-	swing stringProperty
+	bridge.PropertyContext
+	mode       bridge.IProperty[string]
+	temp       bridge.IProperty[float64]
+	outside    bridge.IProperty[float64]
+	targettemp bridge.IProperty[float64]
+	power      bridge.IProperty[string]
+	//humidity   bridge.IProperty[float64]
+	fan   bridge.IProperty[string]
+	swing bridge.IProperty[string]
 }
 
 func CreateBridge(runtime hass.IPubSubRuntime, host string) *daikin2MqttBridge {
 	bridge := &daikin2MqttBridge{
-		propertyContext: propertyContext{
+		PropertyContext: bridge.PropertyContext{
 			IPubSubRuntime: runtime,
-			base:           "daikin",
-			id:             host,
+			Base:           "daikin",
+			Id:             host,
 		},
 	}
 	bridge.mode = bridge.DefineString("mode")
@@ -41,14 +42,14 @@ func CreateBridge(runtime hass.IPubSubRuntime, host string) *daikin2MqttBridge {
 func (bridge *daikin2MqttBridge) HVACDescriptor() *hass.HVAC {
 	return &hass.HVAC{
 		BasicConfig: hass.BasicConfig{
-			UniqueID: "daikin_" + bridge.id + "_climate",
+			UniqueID: "daikin_" + bridge.Id + "_climate",
 			Device: &hass.Device{
-				Name:         "daikin_" + bridge.id + "_climate",
+				Name:         "daikin_" + bridge.Id + "_climate",
 				Manufacturer: "Daikin",
 				Model:        "Daikin AC",
 				SwVersion:    "0.0.1",
 				Identifiers: []string{
-					"daikin_ac_" + bridge.id,
+					"daikin_ac_" + bridge.Id,
 				},
 			},
 		},
@@ -168,11 +169,11 @@ func swing_daikin2mqtt(fandir api.FanDir) string {
 	return "none"
 }
 
-func (bridge *daikin2MqttBridge) Attach(ac Daikin, nodeid string) {
-	hvac := bridge.HVACDescriptor()
-	hass.AnnounceDevice(bridge, "homeassistant", nodeid, hvac.GetBasic().UniqueID, hvac)
+func (acbridge *daikin2MqttBridge) Attach(ac Daikin, nodeid string) {
+	hvac := acbridge.HVACDescriptor()
+	bridge.AnnounceDevice(acbridge, "homeassistant", nodeid, hvac.GetBasic().UniqueID, hvac)
 
-	bridge.mode.OnCommand(func(value string) {
+	acbridge.mode.OnCommand(func(value string) {
 		ac.GetAndSet(func(ds *DaikinState) bool {
 			power, mode := mode_mqtt2daikin(value)
 			if mode != "" {
@@ -182,13 +183,13 @@ func (bridge *daikin2MqttBridge) Attach(ac Daikin, nodeid string) {
 			return true
 		})
 	})
-	bridge.targettemp.OnCommand(func(value float64) {
+	acbridge.targettemp.OnCommand(func(value float64) {
 		ac.GetAndSet(func(ds *DaikinState) bool {
 			ds.Temp = value
 			return true
 		})
 	})
-	bridge.power.OnCommand(func(value string) {
+	acbridge.power.OnCommand(func(value string) {
 		if value == "ON" {
 			ac.GetAndSet(func(ds *DaikinState) bool {
 				ds.Power = true
@@ -202,13 +203,13 @@ func (bridge *daikin2MqttBridge) Attach(ac Daikin, nodeid string) {
 			})
 		}
 	})
-	bridge.fan.OnCommand(func(value string) {
+	acbridge.fan.OnCommand(func(value string) {
 		ac.GetAndSet(func(ds *DaikinState) bool {
 			ds.FanRate = fan_mqtt2daikin(value)
 			return ds.FanRate != api.FanRateUnset
 		})
 	})
-	bridge.swing.OnCommand(func(value string) {
+	acbridge.swing.OnCommand(func(value string) {
 		ac.GetAndSet(func(ds *DaikinState) bool {
 			ds.FanDir = swing_mqtt2daikin(value)
 			return ds.FanDir != api.FanDirUnset
@@ -219,14 +220,14 @@ func (bridge *daikin2MqttBridge) Attach(ac Daikin, nodeid string) {
 		for range time.Tick(time.Minute) {
 			sensor, err := ac.ReadSensor()
 			if err == nil {
-				bridge.temp.NotifyState(sensor.Temp)
-				bridge.outside.NotifyState(*sensor.World)
+				acbridge.temp.NotifyState(sensor.Temp)
+				acbridge.outside.NotifyState(*sensor.World)
 			}
 			ci := ac.State()
-			bridge.targettemp.NotifyState(ci.Temp)
-			bridge.mode.NotifyState(mode_daikin2mqtt(ci.Power, ci.Mode))
-			bridge.fan.NotifyState(fan_daikin2mqtt(ci.FanRate))
-			bridge.swing.NotifyState(swing_daikin2mqtt(ci.FanDir))
+			acbridge.targettemp.NotifyState(ci.Temp)
+			acbridge.mode.NotifyState(mode_daikin2mqtt(ci.Power, ci.Mode))
+			acbridge.fan.NotifyState(fan_daikin2mqtt(ci.FanRate))
+			acbridge.swing.NotifyState(swing_daikin2mqtt(ci.FanDir))
 		}
 	}()
 }
