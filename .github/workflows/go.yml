@@ -19,10 +19,30 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.18'
+        go-version: '1.23'
 
-    - name: Build
-      run: go build -v ./...
-
+    - name: Get release info
+      id: release_info
+      if: github.ref_type == 'tag'
+      uses: revam/gh-action-get-tag-and-version@v1
+      with:
+        tag: ${{ github.ref }}
+        prefix: v
+        prefixRegex: "[vV]?"
+      
+    - id: set_version
+      uses: marcdomain/set-variables@v1.2
+      name: Set version
+      with:
+        variables: |
+          VERSION: '${{ github.ref_type }}' == 'tag' ? "${{ steps.release_info.outputs.version }}" : "0.0.0.0"
+    - run: echo "VERSION ${{ env.VERSION }}"
     - name: Test
       run: go test -v ./...
+    
+    - name: Build
+      env:
+        GOOS: "linux"
+        GOARCH: "arm"
+        GOARM: "5"
+      run: go build -o daikin2mqtt-armhf -v ./cmd/main

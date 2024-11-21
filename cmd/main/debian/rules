@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+clean:
+	rm -f daikin2mqtt
+
+build:
+	cp daikin2mqtt-${DEB_HOST_ARCH} daikin2mqtt
+
+binary:
+	mkdir -p debian/daikin2mqtt/usr/bin
+	sudo cp daikin2mqtt debian/daikin2mqtt/usr/bin/
+	dh_gencontrol
+	dh_builddeb
