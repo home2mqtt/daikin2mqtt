@@ -5,10 +5,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/home2mqtt/hass"
 	"github.com/samthor/daikin-go/api"
 )
 
 type IHVAC[StateType any] interface {
+	hass.IHVAC
 	Stop() (StateType, error)
 	Restart(StateType) error
 	State() StateType
@@ -57,6 +59,36 @@ type GetMonthPowerEx struct {
 
 type ac struct {
 	baseurl string
+}
+
+// Fan implements Daikin.
+func (ac *ac) Fan() hass.IEnumField {
+	panic("unimplemented")
+}
+
+// Mode implements Daikin.
+func (ac *ac) Mode() hass.IEnumField {
+	panic("unimplemented")
+}
+
+// Power implements Daikin.
+func (ac *ac) Power() hass.IField[bool] {
+	panic("unimplemented")
+}
+
+// Swing implements Daikin.
+func (ac *ac) Swing() hass.IEnumField {
+	panic("unimplemented")
+}
+
+// TargetTemp implements Daikin.
+func (ac *ac) TargetTemp() hass.IField[float64] {
+	panic("unimplemented")
+}
+
+// Temp implements Daikin.
+func (ac *ac) Temp() hass.ISensor[float64] {
+	panic("unimplemented")
 }
 
 func parsePowerValues(values string) []int {
